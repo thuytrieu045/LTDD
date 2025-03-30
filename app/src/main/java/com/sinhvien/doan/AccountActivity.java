@@ -52,13 +52,19 @@ public class AccountActivity extends AppCompatActivity {
             finish();
         });
 
-        // Đăng xuất
+        // Đăng xuất và chuyển về màn hình đăng nhập
         btnSignout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
+            Toast.makeText(this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+
+            // Chuyển về màn hình đăng nhập
+            Intent intent = new Intent(AccountActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Xóa lịch sử activity
+            startActivity(intent);
             finish();
         });
 
-        // Quay lại
+        // Quay lại màn hình trước đó
         btnBack.setOnClickListener(v -> finish());
 
         // Chuyển sang trang liên kết tài khoản

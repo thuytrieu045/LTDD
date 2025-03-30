@@ -130,7 +130,7 @@ public class AddRecipeActivity extends AppCompatActivity {
             }
         }
 
-        //Chuyển sang RecipePostActivity
+        //Chuyển sang ViewPostActivity
         Intent intent = new Intent(AddRecipeActivity.this, ViewPostActivity.class);
         intent.putExtra("title", name);
         intent.putExtra("difficulty", difficulty);

@@ -8,12 +8,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TEN_DATABASE = "BakingRecipeApp.db";
-    private static final int DATABASE_VERSION = 2; // Tăng version để kích hoạt onUpgrade
+    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt onUpgrade
 
     // Bảng Users
     public static final String BANG_USERS = "users";
     public static final String COT_USER_ID = "user_id";
     public static final String COT_FIREBASE_UID = "firebase_uid";
+    public static final String COT_USERNAME = "username";
 
     // Bảng Recipes
     public static final String BANG_RECIPES = "recipes";
@@ -30,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_BANG_USERS = "CREATE TABLE " + BANG_USERS + " (" +
             COT_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COT_FIREBASE_UID + " TEXT UNIQUE NOT NULL, " +
+            COT_USERNAME + " TEXT, " +
             "momo_number TEXT, " +
             "zalopay_number TEXT, " +
             "vietcombank_account TEXT, " +
@@ -68,6 +70,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + BANG_USERS + " ADD COLUMN mbbank_account TEXT");
             db.execSQL("ALTER TABLE " + BANG_USERS + " ADD COLUMN vietinbank_account TEXT");
         }
+
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE " + BANG_USERS + " ADD COLUMN " + COT_USERNAME + " TEXT");
+        }
     }
 
     public int getUserId(String firebaseUid) {
@@ -97,6 +103,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("vietcombank_account", vietcombank);
         values.put("mbbank_account", mbbank);
         values.put("vietinbank_account", vietinbank);
+        db.update(BANG_USERS, values, COT_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+    }
+
+    // Hàm cập nhật username
+    public void updateUsername(int userId, String username) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COT_USERNAME, username);
         db.update(BANG_USERS, values, COT_USER_ID + " = ?", new String[]{String.valueOf(userId)});
     }
 }

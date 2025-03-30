@@ -118,6 +118,17 @@ public class MyDataBase {
         return recipe;
     }
 
+    public String getUsername(int userId) {
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        String username = null;
+        Cursor cursor = database.rawQuery("SELECT username FROM users WHERE user_id = ?", new String[]{String.valueOf(userId)});
+        if(cursor.moveToFirst()) {
+            username = cursor.getString(0); // lấy username ở cột đầu tiên
+        }
+        cursor.close();
+        return username; // trả về null nếu không tìm thấy username
+    }
+
     // Chọn lấy công thức theo category
     public Cursor getRecipeByCategory(int categoryId) {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
@@ -131,7 +142,7 @@ public class MyDataBase {
 
     }
 
-    public Cursor getRecipeByUserID(int userID) {
+    public Cursor getRecipeByUserId(int userId) {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
         String[] cot = {
                 DatabaseHelper.COT_RECIPE_ID,
@@ -149,7 +160,7 @@ public class MyDataBase {
                 DatabaseHelper.BANG_RECIPES,
                 null,
                 DatabaseHelper.COT_USER_ID + " = ?",
-                new String[]{String.valueOf(userID)},
+                new String[]{String.valueOf(userId)},
                 null, null, null
         );
     }

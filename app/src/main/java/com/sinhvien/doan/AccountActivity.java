@@ -1,7 +1,9 @@
 package com.sinhvien.doan;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,10 +14,11 @@ import com.google.firebase.auth.FirebaseUser;
 public class AccountActivity extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
     private TextView profileName;
-    private Button btnSavePayment;
+    private Button btnChangeName;
     private Button btnSignout;
     private Button btnBack;
     private Button btnLinkAccounts;
+    private MyDataBase myDataBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,20 +30,26 @@ public class AccountActivity extends AppCompatActivity {
 
         // Khai báo và ánh xạ các ID từ layout
         profileName = findViewById(R.id.profileName);
-        btnSavePayment = findViewById(R.id.btnSavePayment);
+        btnChangeName = findViewById(R.id.btnEdtName);
         btnSignout = findViewById(R.id.btnSignout);
         btnBack = findViewById(R.id.btnBack);
         btnLinkAccounts = findViewById(R.id.btnLinkAccounts);
+        myDataBase = new MyDataBase(this);
 
-        // Hiển thị email từ Firebase
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            profileName.setText(user.getEmail());
+        String firebaseUid = user.getUid();
+        DatabaseHelper db = new DatabaseHelper(this);
+        int userId = db.getUserId(firebaseUid);
+        String username = myDataBase.getUsername(userId);
+        if (user != null && username == null) {
+            profileName.setText("User");
         }
+        else
+            profileName.setText(username);
 
-        // Lưu thông tin thanh toán (tạm thời chỉ hiển thị Toast)
-        btnSavePayment.setOnClickListener(v -> {
-            Toast.makeText(this, "Không có thông tin để lưu!", Toast.LENGTH_SHORT).show();
+        btnChangeName.setOnClickListener(v -> {startActivity(
+            new Intent(AccountActivity.this, changeUsername.class));
+            finish();
         });
 
         // Đăng xuất

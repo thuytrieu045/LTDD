@@ -5,7 +5,9 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -22,10 +24,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class SignupActivity extends AppCompatActivity {
-    private TextInputEditText edemail, edpassword, edrppassword;
+    private TextInputEditText edname, edemail, edpassword, edrppassword;
     private Button btnsignup;
     private TextView txtLogin;
     private FirebaseAuth mAuth;
+    private DatabaseHelper databaseHelper;
 
     public void onStart()  {
         super.onStart();
@@ -42,16 +45,19 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup);
 
+        edname = findViewById(R.id.edname);
         edemail = findViewById(R.id.edemail);
         edpassword = findViewById(R.id.edpassword);
         edrppassword = findViewById(R.id.edrppassword);
         btnsignup = findViewById(R.id.btnsignup);
         txtLogin = findViewById(R.id.txtLogin);
         mAuth = FirebaseAuth.getInstance();
+        databaseHelper = new DatabaseHelper(SignupActivity.this);
 
         btnsignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String username = edname.getText().toString();
                 String email = edemail.getText().toString();
                 String password = edpassword.getText().toString();
                 String rppassword = edrppassword.getText().toString();
@@ -77,6 +83,14 @@ public class SignupActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    if (user != null && !username.equals("")) {
+                                        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+                                        ContentValues values = new ContentValues();
+                                        values.put("firebase_uid", user.getUid()); // Lưu UID Firebase
+                                        values.put("username", username); // Lưu username
+                                        db.insert("users", null, values);
+                                    }
                                     // Sign in success, update UI with the signed-in user's information
                                     Intent in = new Intent(SignupActivity.this,LoginActivity.class);
                                     startActivity(in);

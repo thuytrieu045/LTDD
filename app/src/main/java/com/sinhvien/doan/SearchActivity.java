@@ -96,7 +96,7 @@ public class SearchActivity extends AppCompatActivity {
                         String firebaseUid = user.getUid(); // Lấy Firebase UID
                         int userId = databaseHelper.getUserId(firebaseUid); // Chuyển sang user_id
                         if (userId != -1) {
-                            Cursor cursor = myDataBase.getRecipeByUserID(userId);
+                            Cursor cursor = myDataBase.getRecipeByUserId(userId);
                             if (cursor != null && cursor.moveToFirst()) {
                                 do {
                                     Recipe recipe = new Recipe(
@@ -115,6 +115,8 @@ public class SearchActivity extends AppCompatActivity {
                                 cursor.close();
                             }
                             if (recipesList.size() > 0)
+                                recipeAdapter = new RecipeAdapter(this, recipesList);
+                            else if (recipesList.size() == 0 && userId != - 1)
                                 recipeAdapter = new RecipeAdapter(this, recipesList);
                         }
                     }

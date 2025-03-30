@@ -18,6 +18,25 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_margin="10dp"
+        android:hint="username"
+        android:gravity="center"
+
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edname"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/custtomedit"
+            android:paddingLeft="10dp"
+
+
+
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_margin="10dp"
         android:hint="email"
         android:gravity="center"
 

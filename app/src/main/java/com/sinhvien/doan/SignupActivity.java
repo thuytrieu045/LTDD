@@ -22,12 +22,17 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
     private TextInputEditText edname, edemail, edpassword, edrppassword;
     private Button btnsignup;
     private TextView txtLogin;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore fStore;
     private DatabaseHelper databaseHelper;
 
     public void onStart()  {
@@ -51,7 +56,9 @@ public class SignupActivity extends AppCompatActivity {
         edrppassword = findViewById(R.id.edrppassword);
         btnsignup = findViewById(R.id.btnsignup);
         txtLogin = findViewById(R.id.txtLogin);
+
         mAuth = FirebaseAuth.getInstance();
+        fStore = FirebaseFirestore.getInstance();
         databaseHelper = new DatabaseHelper(SignupActivity.this);
 
         btnsignup.setOnClickListener(new View.OnClickListener() {
@@ -84,6 +91,11 @@ public class SignupActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
+                                    String userId = user.getUid();
+                                    Map<String, Object> userData = new HashMap<>();
+                                    userData.put("role", "user"); // Hoặc "admin" nếu là tài khoản admin
+                                    fStore.collection("users").document(userId).set(userData);
+
                                     if (user != null && !username.equals("")) {
                                         SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                         ContentValues values = new ContentValues();

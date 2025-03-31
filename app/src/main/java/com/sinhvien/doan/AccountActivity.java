@@ -10,13 +10,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class AccountActivity extends AppCompatActivity {
+    private MyDataBase db;
     private DatabaseHelper databaseHelper;
     private TextView profileName;
-    private Button btnSavePayment;
-    private Button btnSignout;
-    private Button btnBack;
-    private Button btnLinkAccounts;
-    private Button btnViewMyPosts;
+    private Button btnSavePayment, btnSignout, btnBack, btnLinkAccounts, btnViewMyPosts, btnChangeName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,16 +30,27 @@ public class AccountActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         btnLinkAccounts = findViewById(R.id.btnLinkAccounts);
         btnViewMyPosts = findViewById(R.id.btnViewMyPosts);
+        btnChangeName = findViewById(R.id.btnEdtName);
+        db = new MyDataBase(this);
 
-        // Hiển thị email từ Firebase
+        // Hiển thị username từ DatabaseHelper
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            profileName.setText(user.getEmail());
+        String username = db.getUsername(databaseHelper.getUserId(user.getUid()));
+        if (username != null) {
+            profileName.setText(username);
         }
+        else
+            profileName.setText("User");
 
         // Lưu thông tin thanh toán (tạm thời chỉ hiển thị Toast)
         btnSavePayment.setOnClickListener(v -> {
             Toast.makeText(this, "Không có thông tin để lưu!", Toast.LENGTH_SHORT).show();
+        });
+
+        // Thay đổi username
+        btnChangeName.setOnClickListener(v -> {
+            startActivity(new Intent(getApplicationContext(), changeUsername.class));
+            finish();
         });
 
         // Đăng xuất

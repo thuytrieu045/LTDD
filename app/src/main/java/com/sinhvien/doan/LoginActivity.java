@@ -17,22 +17,23 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText edmail, edpassword;
     private Button btnLogin;
     private TextView txtSignup,txtForgerPass;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
 
     // Kiểm tra cho vô trang home nếu đã login
-    public void onStart()  {
+    @Override
+    public void onStart() {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-            startActivity(intent);
-            finish();
+        if (currentUser != null) {
+            checkUserRole(currentUser.getUid());
         }
     }
 
@@ -48,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         txtSignup = findViewById(R.id.txtSignup);
         txtForgerPass = findViewById(R.id.txtForgetPass);
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         Intent intent = getIntent();
         if (intent!=null) {
@@ -77,13 +79,12 @@ public class LoginActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Đăng Nhập Thành công", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    if (user != null) {
+                                        checkUserRole(user.getUid());
+                                    }
                                 } else {
-                                    Toast.makeText(LoginActivity.this, "Sai Tài Khoản Hoặc Mật khẩu!",
-                                            Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LoginActivity.this, "Sai tài khoản hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
@@ -108,6 +109,25 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private void checkUserRole(String userId) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String role = documentSnapshot.getString("role");
+                        Intent intent;
+                        if ("admin".equals(role)) {
+                            intent = new Intent(LoginActivity.this, AdminActivity.class);
+                        } else {
+                            intent = new Intent(LoginActivity.this, MainActivity.class);
+                        }
+                        startActivity(intent);
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(LoginActivity.this, "Lỗi khi lấy dữ liệu tài khoản!", Toast.LENGTH_SHORT).show();
+                });
+    }
 
     // Kiểm tra độ hợp lý của email
     private boolean isValidEmail(String email) {

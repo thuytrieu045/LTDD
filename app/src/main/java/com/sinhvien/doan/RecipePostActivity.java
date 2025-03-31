@@ -11,6 +11,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import android.app.Dialog;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
@@ -37,6 +40,9 @@ public class RecipePostActivity extends AppCompatActivity {
         txtSteps = findViewById(R.id.txtSteps);
         Button btnDonate = findViewById(R.id.btnDonate);
         Button btnBack = findViewById(R.id.btnBack);
+        Button btnFav = findViewById(R.id.btnFav);
+
+
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -63,7 +69,30 @@ public class RecipePostActivity extends AppCompatActivity {
                 imgRecipe.setImageResource(R.drawable.dessert);
             }
 
+            // Kiểm tra trạng yêu thích
+            if (databaseHelper.isFavorite(databaseHelper.getUserId(FirebaseAuth.getInstance().getCurrentUser().getUid()), databaseHelper.getRecipeId(name))) {
+                btnFav.setText("Bỏ yêu thích");
+            }
+            else
+                btnFav.setText("Yêu thích");
+
+
+
+
             btnDonate.setOnClickListener(v -> handleDonate(name));
+            btnFav.setOnClickListener(v -> {
+                int userId = databaseHelper.getUserId(FirebaseAuth.getInstance().getUid());
+                int recipeId = databaseHelper.getRecipeId(name);
+                if (databaseHelper.isFavorite(userId, recipeId)) {
+                    databaseHelper.removeFavorite(userId, recipeId);
+                    btnFav.setText("Yêu thích");
+                    Toast.makeText(this, "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                } else {
+                    databaseHelper.addFavorite(userId, recipeId);
+                    btnFav.setText("Bỏ yêu thích");
+                    Toast.makeText(this, "Đã thêm vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         btnBack.setOnClickListener(v -> finish());

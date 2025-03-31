@@ -6,9 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TEN_DATABASE = "BakingRecipeApp.db";
-    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt onUpgrade
+    private static final int DATABASE_VERSION = 4; // Tăng version để kích hoạt onUpgrade
 
     // Bảng Users
     public static final String BANG_USERS = "users";
@@ -26,6 +28,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COT_CATEGORY = "cate";
     public static final String COT_TIME = "time";
     public static final String COT_DOKHO = "difficulty";
+
+    // Bảng Favorite (Lưu công thức yêu thích của user)
+    public static final String BANG_FAVORITE = "favorite";
+    public static final String COT_FAVORITE_USER_ID = "user_id";
+    public static final String COT_FAVORITE_RECIPE_ID = "recipe_id";
 
     // Chuỗi tạo bảng Users với các cột thanh toán
     private static final String CREATE_BANG_USERS = "CREATE TABLE " + BANG_USERS + " (" +
@@ -50,6 +57,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             COT_DOKHO + " TEXT NOT NULL, " +
             "FOREIGN KEY(" + COT_USER_ID + ") REFERENCES " + BANG_USERS + "(" + COT_USER_ID + "))";
 
+    // Tạo bảng Favorite (Lưu công thức yêu thích)
+    private static final String CREATE_BANG_FAVORITE = "CREATE TABLE " + BANG_FAVORITE + " (" +
+            COT_FAVORITE_USER_ID + " INTEGER NOT NULL, " +
+            COT_FAVORITE_RECIPE_ID + " INTEGER NOT NULL, " +
+            "PRIMARY KEY (" + COT_FAVORITE_USER_ID + ", " + COT_FAVORITE_RECIPE_ID + "), " +
+            "FOREIGN KEY(" + COT_FAVORITE_USER_ID + ") REFERENCES " + BANG_USERS + "(" + COT_USER_ID + ") ON DELETE CASCADE, " +
+            "FOREIGN KEY(" + COT_FAVORITE_RECIPE_ID + ") REFERENCES " + BANG_RECIPES + "(" + COT_RECIPE_ID + ") ON DELETE CASCADE)";
+
     public DatabaseHelper(Context context) {
         super(context, TEN_DATABASE, null, DATABASE_VERSION);
     }
@@ -58,6 +73,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_BANG_USERS);
         db.execSQL(CREATE_BANG_RECIPES);
+        db.execSQL(CREATE_BANG_FAVORITE);
     }
 
     @Override
@@ -73,6 +89,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (oldVersion < 3) {
             db.execSQL("ALTER TABLE " + BANG_USERS + " ADD COLUMN " + COT_USERNAME + " TEXT");
+
+        }
+
+        if (oldVersion < 4) {
+            db.execSQL(CREATE_BANG_FAVORITE);
         }
     }
 
@@ -101,17 +122,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userId;
     }
 
-    public String getUserUid(String username) {
+
+    public int getRecipeId(String recipeName) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String uid = null;
-        Cursor cursor = db.rawQuery("SELECT firebase_uid FROM users WHERE username = ?", new String[]{username});
+        int ID = -1;
+        Cursor cursor = db.rawQuery("SELECT recipe_id FROM recipes WHERE recipe_name = ?", new String[]{recipeName});
         if (cursor.moveToFirst()) {
-            uid = cursor.getString(0);
+            ID = cursor.getInt(0);
         }
         cursor.close();
         db.close();
-        return uid;
+        return ID;
     }
+
 
     public void updatePaymentInfo(int userId, String momo, String zalopay, String vietcombank, String mbbank, String vietinbank) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -130,5 +153,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COT_USERNAME, username);
         db.update(BANG_USERS, values, COT_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+    }
+
+    // Thêm công thức vào danh sách yêu thích
+    public boolean addFavorite(int userId, int recipeId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COT_FAVORITE_USER_ID, userId);
+        values.put(COT_FAVORITE_RECIPE_ID, recipeId);
+
+        long result = db.insert(BANG_FAVORITE, null, values);
+        return result != -1;
+    }
+
+    // Xóa công thức khỏi danh sách yêu thích
+    public boolean removeFavorite(int userId, int recipeId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(BANG_FAVORITE, COT_FAVORITE_USER_ID + " = ? AND " + COT_FAVORITE_RECIPE_ID + " = ?",
+                new String[]{String.valueOf(userId), String.valueOf(recipeId)});
+        return result > 0;
+    }
+
+    // Kiểm tra xem công thức có trong danh sách yêu thích không
+    public boolean isFavorite(int userId, int recipeId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + BANG_FAVORITE + " WHERE " +
+                        COT_FAVORITE_USER_ID + " = ? AND " + COT_FAVORITE_RECIPE_ID + " = ?",
+                new String[]{String.valueOf(userId), String.valueOf(recipeId)});
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
+    // Lấy danh sách công thức yêu thích của một user
+    public Cursor getUserFavorites(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + BANG_RECIPES + " INNER JOIN " + BANG_FAVORITE +
+                        " ON " + BANG_RECIPES + "." + COT_RECIPE_ID + " = " + BANG_FAVORITE + "." + COT_FAVORITE_RECIPE_ID +
+                        " WHERE " + BANG_FAVORITE + "." + COT_FAVORITE_USER_ID + " = ?",
+                new String[]{String.valueOf(userId)});
     }
 }

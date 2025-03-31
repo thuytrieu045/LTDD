@@ -23,6 +23,13 @@ public class Recipe {
         this.difficulty = difficulty;
     }
 
+    public Recipe(int recipeId, String name, String ingredients, String imgUrl) {
+        this.recipeId = recipeId;
+        this.recipeName = name;
+        this.ingredients = ingredients;
+        this.imgSource = imgUrl;
+    }
+
     public Recipe(String recipeName, String steps, String imgSource, int category_id)
     {
         this.recipeName = recipeName;

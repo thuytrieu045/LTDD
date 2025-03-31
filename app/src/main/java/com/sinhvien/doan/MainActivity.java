@@ -63,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Chuyển sang Post", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(MainActivity.this, AddRecipeActivity.class));
                     return true;
+                } else if (itemId == R.id.mnFavorite) {
+                    Toast.makeText(MainActivity.this, "Chuyển sang Favorite", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, FavoriteActivity.class));
+                    return true;
                 } else if (itemId == R.id.mnSearch) {
                     Toast.makeText(MainActivity.this, "Chuyển sang Search", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(MainActivity.this, SearchActivity.class));

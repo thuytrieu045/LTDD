@@ -141,4 +141,14 @@ public class MyDataBase {
                 null, null, null
         );
     }
+    public String getUsername(int userId) {
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        String username = null;
+        Cursor cursor = database.rawQuery("SELECT username FROM users WHERE user_id = ?", new String[]{String.valueOf(userId)});
+        if(cursor.moveToFirst()) {
+            username = cursor.getString(0); // lấy username ở cột đầu tiên
+        }
+        cursor.close();
+        return username; // trả về null nếu không tìm thấy username
+    }
 }

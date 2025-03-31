@@ -22,12 +22,17 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
     private TextInputEditText edname, edemail, edpassword, edrppassword;
     private Button btnsignup;
     private TextView txtLogin;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore fStore;
     private DatabaseHelper databaseHelper;
 
     public void onStart()  {
@@ -51,7 +56,9 @@ public class SignupActivity extends AppCompatActivity {
         edrppassword = findViewById(R.id.edrppassword);
         btnsignup = findViewById(R.id.btnsignup);
         txtLogin = findViewById(R.id.txtLogin);
+
         mAuth = FirebaseAuth.getInstance();
+        fStore = FirebaseFirestore.getInstance();
         databaseHelper = new DatabaseHelper(SignupActivity.this);
 
         btnsignup.setOnClickListener(new View.OnClickListener() {
@@ -61,7 +68,7 @@ public class SignupActivity extends AppCompatActivity {
                 String email = edemail.getText().toString();
                 String password = edpassword.getText().toString();
                 String rppassword = edrppassword.getText().toString();
-                if(email.equals("")||password.equals("")||rppassword.isEmpty()){
+                if(username.equals("")||email.equals("")||password.equals("")||rppassword.isEmpty()){
                     Toast.makeText(SignupActivity.this, "vui lòng nhập đầy đủ!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -84,7 +91,16 @@ public class SignupActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
+                                    String userId = user.getUid();
+
                                     if (user != null && !username.equals("")) {
+                                        // Lưu vào firestore
+                                        Map<String, Object> userData = new HashMap<>();
+                                        userData.put("email", email);
+                                        userData.put("username", username);
+                                        userData.put("role", "user"); // Hoặc "admin" nếu là tài khoản admin
+                                        fStore.collection("users").document(userId).set(userData);
+
                                         SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                         ContentValues values = new ContentValues();
                                         values.put("firebase_uid", user.getUid()); // Lưu UID Firebase

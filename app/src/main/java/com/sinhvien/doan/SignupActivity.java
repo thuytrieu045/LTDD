@@ -68,7 +68,7 @@ public class SignupActivity extends AppCompatActivity {
                 String email = edemail.getText().toString();
                 String password = edpassword.getText().toString();
                 String rppassword = edrppassword.getText().toString();
-                if(email.equals("")||password.equals("")||rppassword.isEmpty()){
+                if(username.equals("")||email.equals("")||password.equals("")||rppassword.isEmpty()){
                     Toast.makeText(SignupActivity.this, "vui lòng nhập đầy đủ!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -92,11 +92,15 @@ public class SignupActivity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     String userId = user.getUid();
-                                    Map<String, Object> userData = new HashMap<>();
-                                    userData.put("role", "user"); // Hoặc "admin" nếu là tài khoản admin
-                                    fStore.collection("users").document(userId).set(userData);
 
                                     if (user != null && !username.equals("")) {
+                                        // Lưu vào firestore
+                                        Map<String, Object> userData = new HashMap<>();
+                                        userData.put("email", email);
+                                        userData.put("username", username);
+                                        userData.put("role", "user"); // Hoặc "admin" nếu là tài khoản admin
+                                        fStore.collection("users").document(userId).set(userData);
+
                                         SQLiteDatabase db = databaseHelper.getWritableDatabase();
                                         ContentValues values = new ContentValues();
                                         values.put("firebase_uid", user.getUid()); // Lưu UID Firebase

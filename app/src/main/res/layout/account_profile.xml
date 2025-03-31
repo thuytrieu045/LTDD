@@ -76,6 +76,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnViewMyPosts" />
 
+        <!-- Button Thay đổi tên người dùng -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEdtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/Nau_sua"
+            android:text="Thay đổi tên người dùng"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:cornerRadius="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSavePayment" />
+
         <!-- Button Logout -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignout"
@@ -89,7 +104,7 @@
             app:cornerRadius="50dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnSavePayment" />
+            app:layout_constraintTop_toBottomOf="@id/btnEdtName" />
 
         <!-- Button Back -->
         <com.google.android.material.button.MaterialButton
@@ -97,7 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:backgroundTint="@color/Nau_caramel"
+            android:backgroundTint="@color/Nau_sua"
             android:text="Back"
             android:textColor="@color/white"
             android:textSize="16sp"

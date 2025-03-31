@@ -1,5 +1,6 @@
 package com.sinhvien.doan;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -8,65 +9,81 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AccountActivity extends AppCompatActivity {
     private MyDataBase db;
     private DatabaseHelper databaseHelper;
     private TextView profileName;
-    private Button btnSavePayment, btnSignout, btnBack, btnLinkAccounts, btnViewMyPosts;
-    private FirebaseFirestore fStore;
+    private Button btnSavePayment, btnSignout, btnBack, btnLinkAccounts, btnViewMyPosts, btnChangeName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_profile);
 
-        // Khởi tạo DatabaseHelper
         databaseHelper = new DatabaseHelper(this);
+        db = new MyDataBase(this);
 
-        // Khai báo và ánh xạ các ID từ layout
+        // Ánh xạ UI
         profileName = findViewById(R.id.profileName);
         btnSavePayment = findViewById(R.id.btnSavePayment);
         btnSignout = findViewById(R.id.btnSignout);
         btnBack = findViewById(R.id.btnBack);
         btnLinkAccounts = findViewById(R.id.btnLinkAccounts);
         btnViewMyPosts = findViewById(R.id.btnViewMyPosts);
-        db = new MyDataBase(this);
+        btnChangeName = findViewById(R.id.btnEdtName);
 
-        // Hiển thị username từ DatabaseHelper
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String username = db.getUsername(databaseHelper.getUserId(user.getUid()));
-        if (username != null) {
-            profileName.setText(username);
-        }
-        else
-            profileName.setText("User");
+        // Hiển thị username
+        loadUserProfile();
 
-        // Lưu thông tin thanh toán (tạm thời chỉ hiển thị Toast)
-        btnSavePayment.setOnClickListener(v -> {
-            Toast.makeText(this, "Không có thông tin để lưu!", Toast.LENGTH_SHORT).show();
-        });
+        // Xử lý sự kiện các nút
+        btnSavePayment.setOnClickListener(v ->
+                Toast.makeText(this, "Không có thông tin để lưu!", Toast.LENGTH_SHORT).show()
+        );
 
-        // Đăng xuất
-        btnSignout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            finish();
-        });
+        btnChangeName.setOnClickListener(v ->
+                startActivity(new Intent(getApplicationContext(), changeUsername.class))
+        );
 
-        // Quay lại
+        btnSignout.setOnClickListener(v -> showLogoutDialog());
         btnBack.setOnClickListener(v -> finish());
+        btnLinkAccounts.setOnClickListener(v ->
+                startActivity(new Intent(AccountActivity.this, LinkAccountsActivity.class))
+        );
 
-        // Chuyển sang trang liên kết tài khoản
-        btnLinkAccounts.setOnClickListener(v -> {
-            Intent intent = new Intent(AccountActivity.this, LinkAccountsActivity.class);
-            startActivity(intent);
-        });
-
-        // Chuyển sang trang xem bài viết của tôi
-        btnViewMyPosts.setOnClickListener(v -> {
-            Intent intent = new Intent(AccountActivity.this, ViewMyPostActivity.class);
-            startActivity(intent);
-        });
+        btnViewMyPosts.setOnClickListener(v ->
+                startActivity(new Intent(AccountActivity.this, ViewMyPostActivity.class))
+        );
     }
+
+    private void loadUserProfile() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            try {
+                String username = db.getUsername(databaseHelper.getUserId(user.getUid()));
+                profileName.setText(username != null ? username : "User");
+            } catch (Exception e) {
+                profileName.setText("User");
+                e.printStackTrace(); // Debug lỗi nếu có
+            }
+        }
+    }
+
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận đăng xuất")
+                .setMessage("Bạn có chắc chắn muốn đăng xuất?")
+                .setPositiveButton("Đăng xuất", (dialog, which) -> {
+                    FirebaseAuth.getInstance().signOut();
+                    Toast.makeText(this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+
+                    // Chuyển về trang đăng nhập
+                    Intent intent = new Intent(AccountActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
 }

@@ -30,7 +30,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
     @Override
     public RecipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View recipeView = inflater.inflate(R.layout.activity_recipe_detail, parent, false);
+        View recipeView = inflater.inflate(R.layout.item_recipe, parent, false); // Sử dụng item_recipe.xml
         return new RecipeViewHolder(recipeView);
     }
 
@@ -42,17 +42,12 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
         // Load image using Glide
         Glide.with(context)
-                .load(item.getImgSource()) // Upload ảnh bằng URL
-                .placeholder(R.drawable.dessert) // Thay thế không có URL của ảnh
-                .error(R.drawable.donut_icon) // Thay thế ảnh lỗi
+                .load(item.getImgSource())
+                .placeholder(R.drawable.dessert)
+                .error(R.drawable.donut_icon)
                 .into(holder.imAvatar);
 
-        holder.imAvatar.setOnClickListener(v -> {
-            Intent intent = new Intent(context, RecipeDetailActivity.class);
-            intent.putExtra("recipe_id", item.getRecipeId());
-            context.startActivity(intent);
-        });
-
+        // Khi nhấn vào item, mở RecipeDetailActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, RecipeDetailActivity.class);
             intent.putExtra("recipe_id", item.getRecipeId());
@@ -65,7 +60,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         return lstRecipe.size();
     }
 
-    // dùng phương thức filter() để tìm tên công thức
+    // Thêm phương thức filter để tìm kiếm công thức
     public void filter(String query) {
         lstRecipe.clear();
         if (query.isEmpty()) {
@@ -87,9 +82,9 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvRecipeName = itemView.findViewById(R.id.tvRecipeName);
-            tvIngredients = itemView.findViewById(R.id.tvDescription);
             imAvatar = itemView.findViewById(R.id.ivAvatar);
+            tvRecipeName = itemView.findViewById(R.id.tvRecipeName);
+            tvIngredients = itemView.findViewById(R.id.tvIngredients);
         }
     }
 }

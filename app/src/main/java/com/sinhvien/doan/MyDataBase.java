@@ -40,7 +40,7 @@ public class MyDataBase {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COT_TEN_RECIPE, recipe.getRecipeName());
         values.put(DatabaseHelper.COT_INGREDIENTS, recipe.getIngredients());
-        values.put(DatabaseHelper.COT_STEPS, recipe.getSteps());  // Added steps
+        values.put(DatabaseHelper.COT_STEPS, recipe.getSteps());
         values.put(DatabaseHelper.COT_USER_ID, recipe.getUserId());
         values.put(DatabaseHelper.COT_IMG_URL, recipe.getImgSource());
         values.put(DatabaseHelper.COT_CATEGORY, recipe.getCategory_id());
@@ -64,7 +64,7 @@ public class MyDataBase {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COT_TEN_RECIPE, recipe.getRecipeName());
         values.put(DatabaseHelper.COT_INGREDIENTS, recipe.getIngredients());
-        values.put(DatabaseHelper.COT_STEPS, recipe.getSteps());  // Added steps
+        values.put(DatabaseHelper.COT_STEPS, recipe.getSteps());
         values.put(DatabaseHelper.COT_IMG_URL, recipe.getImgSource());
         values.put(DatabaseHelper.COT_TIME, recipe.getTime());
         values.put(DatabaseHelper.COT_DOKHO, recipe.getDifficulty());
@@ -78,7 +78,7 @@ public class MyDataBase {
         );
     }
 
-    //Chọn lấy công thức theo recipe_id
+    // Chọn lấy công thức theo recipe_id
     public Recipe getRecipeById(int recipeId) {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
         Recipe recipe = null;
@@ -89,7 +89,7 @@ public class MyDataBase {
                         DatabaseHelper.COT_RECIPE_ID,
                         DatabaseHelper.COT_TEN_RECIPE,
                         DatabaseHelper.COT_INGREDIENTS,
-                        DatabaseHelper.COT_STEPS,  // Added steps
+                        DatabaseHelper.COT_STEPS,
                         DatabaseHelper.COT_USER_ID,
                         DatabaseHelper.COT_IMG_URL,
                         DatabaseHelper.COT_CATEGORY,
@@ -118,17 +118,6 @@ public class MyDataBase {
         return recipe;
     }
 
-    public String getUsername(int userId) {
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        String username = null;
-        Cursor cursor = database.rawQuery("SELECT username FROM users WHERE user_id = ?", new String[]{String.valueOf(userId)});
-        if(cursor.moveToFirst()) {
-            username = cursor.getString(0); // lấy username ở cột đầu tiên
-        }
-        cursor.close();
-        return username; // trả về null nếu không tìm thấy username
-    }
-
     // Chọn lấy công thức theo category
     public Cursor getRecipeByCategory(int categoryId) {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
@@ -139,23 +128,11 @@ public class MyDataBase {
                 new String[]{String.valueOf(categoryId)},
                 null, null, null
         );
-
     }
 
+    // Chọn lấy công thức theo user_id
     public Cursor getRecipeByUserId(int userId) {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
-        String[] cot = {
-                DatabaseHelper.COT_RECIPE_ID,
-                DatabaseHelper.COT_TEN_RECIPE,
-                DatabaseHelper.COT_INGREDIENTS,
-                DatabaseHelper.COT_STEPS,
-                DatabaseHelper.COT_USER_ID,
-                DatabaseHelper.COT_IMG_URL,
-                DatabaseHelper.COT_CATEGORY,
-                DatabaseHelper.COT_TIME,
-                DatabaseHelper.COT_DOKHO
-        };
-
         return database.query(
                 DatabaseHelper.BANG_RECIPES,
                 null,

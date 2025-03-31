@@ -8,12 +8,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AccountActivity extends AppCompatActivity {
     private MyDataBase db;
     private DatabaseHelper databaseHelper;
     private TextView profileName;
-    private Button btnSavePayment, btnSignout, btnBack, btnLinkAccounts, btnViewMyPosts, btnChangeName;
+    private Button btnSavePayment, btnSignout, btnBack, btnLinkAccounts, btnViewMyPosts;
+    private FirebaseFirestore fStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,6 @@ public class AccountActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         btnLinkAccounts = findViewById(R.id.btnLinkAccounts);
         btnViewMyPosts = findViewById(R.id.btnViewMyPosts);
-        btnChangeName = findViewById(R.id.btnEdtName);
         db = new MyDataBase(this);
 
         // Hiển thị username từ DatabaseHelper
@@ -45,12 +46,6 @@ public class AccountActivity extends AppCompatActivity {
         // Lưu thông tin thanh toán (tạm thời chỉ hiển thị Toast)
         btnSavePayment.setOnClickListener(v -> {
             Toast.makeText(this, "Không có thông tin để lưu!", Toast.LENGTH_SHORT).show();
-        });
-
-        // Thay đổi username
-        btnChangeName.setOnClickListener(v -> {
-            startActivity(new Intent(getApplicationContext(), changeUsername.class));
-            finish();
         });
 
         // Đăng xuất

@@ -3,12 +3,15 @@ package com.sinhvien.doan;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ public class AdminActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<User> userList, filteredList;
     private EditText search_bar;
+    private Button btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,7 @@ public class AdminActivity extends AppCompatActivity {
         filteredList = new ArrayList<>();
         userAdapter = new UserAdapter(this, userList);
         recyclerView.setAdapter(userAdapter);
+        btnBack = findViewById(R.id.btnBack);
 
         db = FirebaseFirestore.getInstance();
         loadUsers();
@@ -53,6 +58,10 @@ public class AdminActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
 
             }
+        });
+        btnBack.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            finish();
         });
     }
 

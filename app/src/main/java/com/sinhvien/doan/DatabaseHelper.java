@@ -76,6 +76,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void deleteUser(int userId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("users", "id = ?", new String[]{String.valueOf(userId)});
+        db.close();
+    }
+
     public int getUserId(String firebaseUid) {
         SQLiteDatabase db = this.getWritableDatabase();
         int userId = -1;
@@ -93,6 +99,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return userId;
+    }
+
+    public String getUserUid(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String uid = null;
+        Cursor cursor = db.rawQuery("SELECT firebase_uid FROM users WHERE username = ?", new String[]{username});
+        if (cursor.moveToFirst()) {
+            uid = cursor.getString(0);
+        }
+        cursor.close();
+        db.close();
+        return uid;
     }
 
     public void updatePaymentInfo(int userId, String momo, String zalopay, String vietcombank, String mbbank, String vietinbank) {

@@ -1,6 +1,7 @@
 package com.sinhvien.doan;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,16 +52,22 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     .setTitle("Xóa người dùng")
                     .setMessage("Bạn có chắc chắn muốn xóa người dùng này?")
                     .setPositiveButton("Xóa", (dialog, which) -> {
-                        db.collection("users").document(mAuth.getCurrentUser().getUid())
-                                .delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(context, "Đã xóa người dùng!", Toast.LENGTH_SHORT).show();
-                                    userList.remove(position);
-                                    notifyDataSetChanged();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(context, "Lỗi khi xóa!", Toast.LENGTH_SHORT).show();
-                                });
+
+                        getUserUidFromFirestore(user.getEmail(), uid -> {
+                            if (uid != null) {
+                                db.collection("users").document(uid)
+                                        .delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(context, "Đã xóa người dùng!", Toast.LENGTH_SHORT).show();
+                                            userList.remove(position);
+                                            mAuth.getCurrentUser().delete();
+                                            notifyDataSetChanged();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(context, "Lỗi khi xóa!", Toast.LENGTH_SHORT).show();
+                                        });
+                            }
+                        });
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -84,26 +91,36 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         editName.setText(user.getUsername());
 
         builder.setView(view);
+
         builder.setPositiveButton("Lưu", (dialog, which) -> {
             String newEmail = editEmail.getText().toString();
             String newRole = editRole.getText().toString();
             String newName = editName.getText().toString();
 
-            db.collection("users").document(mAuth.getCurrentUser().getUid())
-                    .update("email", newEmail, "role", newRole, "username", newName)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(context, "Đã cập nhật!", Toast.LENGTH_SHORT).show();
-                        user.setEmail(newEmail);
-                        user.setRole(newRole);
-                        user.setUsername(newName);
-                        notifyDataSetChanged();
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(context, "Lỗi khi cập nhật!", Toast.LENGTH_SHORT).show());
+            getUserUidFromFirestore(user.getEmail(), uid -> {
+                if (uid != null) {
+                    db.collection("users").document(uid)
+                            .update("email", newEmail, "role", newRole, "username", newName)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Đã cập nhật!", Toast.LENGTH_SHORT).show();
+                                user.setEmail(newEmail);
+                                user.setRole(newRole);
+                                user.setUsername(newName);
+                                notifyDataSetChanged();
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(context, "Lỗi khi cập nhật!", Toast.LENGTH_SHORT).show()
+                            );
+                } else {
+                    Toast.makeText(context, "Không tìm thấy UID người dùng!", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         builder.setNegativeButton("Hủy", null);
         builder.show();
     }
+
 
     @Override
     public int getItemCount() {
@@ -121,5 +138,23 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
+    }
+    private void getUserUidFromFirestore(String email, OnUidFetchedListener listener) {
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String uid = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        listener.onUidFetched(uid);
+                    } else {
+                        listener.onUidFetched(null);
+                    }
+                })
+                .addOnFailureListener(e -> listener.onUidFetched(null));
+    }
+
+    interface OnUidFetchedListener {
+        void onUidFetched(String uid);
     }
 }

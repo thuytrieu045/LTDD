@@ -11,6 +11,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
+import android.app.Dialog;
+import android.widget.ListView;
+import android.widget.ArrayAdapter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecipePostActivity extends AppCompatActivity {
     private ImageView imgRecipe;
@@ -67,20 +72,85 @@ public class RecipePostActivity extends AppCompatActivity {
     private void handleDonate(String recipeName) {
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT user_id FROM recipes WHERE recipe_name = ?", new String[]{recipeName});
-        String paymentLink = "https://mbbank.com.vn/0906780284"; // Mặc định là tài khoản admin
+        String defaultPaymentLink = "https://mbbank.com.vn/0906780284"; // Tài khoản admin mặc định
 
         if (cursor.moveToFirst()) {
             int userId = cursor.getInt(0);
-            Cursor paymentCursor = db.rawQuery("SELECT momo_number FROM users WHERE user_id = ?", new String[]{String.valueOf(userId)});
-            if (paymentCursor.moveToFirst() && paymentCursor.getString(0) != null && !paymentCursor.getString(0).isEmpty()) {
-                String momoNumber = paymentCursor.getString(0);
-                paymentLink = "https://momo.vn/" + momoNumber; // Link MoMo của chủ bài viết
+            Cursor paymentCursor = db.rawQuery(
+                    "SELECT momo_number, zalopay_number, vietcombank_account, mbbank_account, vietinbank_account FROM users WHERE user_id = ?",
+                    new String[]{String.valueOf(userId)}
+            );
+
+            if (paymentCursor.moveToFirst()) {
+                List<String> paymentOptions = new ArrayList<>();
+                List<String> paymentLinks = new ArrayList<>();
+
+                // Kiểm tra từng phương thức thanh toán
+                String momo = paymentCursor.getString(0);
+                if (momo != null && !momo.isEmpty()) {
+                    paymentOptions.add("MoMo (" + momo + ")");
+                    paymentLinks.add("https://momo.vn/" + momo);
+                }
+                String zalopay = paymentCursor.getString(1);
+                if (zalopay != null && !zalopay.isEmpty()) {
+                    paymentOptions.add("ZaloPay (" + zalopay + ")");
+                    paymentLinks.add("https://zalopay.vn/" + zalopay);
+                }
+                String vietcombank = paymentCursor.getString(2);
+                if (vietcombank != null && !vietcombank.isEmpty()) {
+                    paymentOptions.add("Vietcombank (" + vietcombank + ")");
+                    paymentLinks.add("https://vietcombank.com.vn/" + vietcombank);
+                }
+                String mbbank = paymentCursor.getString(3);
+                if (mbbank != null && !mbbank.isEmpty()) {
+                    paymentOptions.add("MB Bank (" + mbbank + ")");
+                    paymentLinks.add("https://mbbank.com.vn/" + mbbank);
+                }
+                String vietinbank = paymentCursor.getString(4);
+                if (vietinbank != null && !vietinbank.isEmpty()) {
+                    paymentOptions.add("VietinBank (" + vietinbank + ")");
+                    paymentLinks.add("https://vietinbank.vn/" + vietinbank);
+                }
+
+                paymentCursor.close();
+
+                if (paymentOptions.isEmpty()) {
+                    openPaymentLink(defaultPaymentLink);
+                } else if (paymentOptions.size() == 1) {
+                    openPaymentLink(paymentLinks.get(0));
+                } else {
+                    showPaymentOptionsDialog(paymentOptions, paymentLinks);
+                }
+                cursor.close();
+                return;
             }
             paymentCursor.close();
         }
         cursor.close();
+        openPaymentLink(defaultPaymentLink);
+    }
 
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentLink));
+    private void openPaymentLink(String link) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
         startActivity(browserIntent);
+    }
+
+    private void showPaymentOptionsDialog(List<String> options, List<String> links) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_payment_options);
+
+        ListView lvPaymentOptions = dialog.findViewById(R.id.lvPaymentOptions);
+        Button btnCancel = dialog.findViewById(R.id.btnCancel);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, options);
+        lvPaymentOptions.setAdapter(adapter);
+
+        lvPaymentOptions.setOnItemClickListener((parent, view, position, id) -> {
+            openPaymentLink(links.get(position));
+            dialog.dismiss();
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 }
